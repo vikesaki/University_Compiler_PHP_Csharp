@@ -83,7 +83,7 @@ namespace PHPtoC_
                     return;
                 }
 
-                Console.WriteLine("Current Grammar");
+                Console.WriteLine("\nCurrent Grammar");
                 while (CurrentGrammar != null)
                 {
                     for (int i = 0; i < CurrentGrammar.Level; i++)
@@ -129,16 +129,36 @@ namespace PHPtoC_
             {"Greater","GREATER"},
             {"Begin","BEGIN"},
             {"IfConstruction","IFCONSTRUCTION"},
-            {"ElifConstruction", "ELIFCONSTRUCTION"},
+            {"ElseConstruction","ELSECONSTRUCTION"},
+            {"ElifConstruction", "ELSEIFCONSTRUCTION"},
             {"WhileConstruction","WHILECONSTRUCTION"},
             {"ForConstruction","FORCONSTRUCTION"},
-            {"DefConstruction","DEFCONSTRUCTION"},
+            {"ForeachConstruction","FOREACHCONSTRUCTION"},
+            {"DoConstruction","DOCONSTRUCTION"},
+            {"Conditions","CONDITIONS"},
             {"Block","BLOCK"},
             {"IntNumber","INTNUMBER"},
             {"FloatNumber","FLOATNUMBER"},
             {"String","STRING"},
             {"Return","RETURN"},
-            {"ListElements","LISTELEMENTS"}
+            {"ListElements","LISTELEMENTS"},
+            {"Echo", "ECHO"},
+
+
+            //condition stuff below
+            {"==", "EQUALTO"},
+            {"===", "IDENTICALLYEQUALTO"},
+            {"!=", "INEQUALTO"},
+            {"!==", "IDENTICALLYINEQUALTO"},
+            {"<", "LESSERTHAN"},
+            {">", "GREATERTHAN"},
+            {"<=", "LESSEREQUALTO"},
+            {">=", "GREATEREQUALTO"},
+            {"<=>", "SPACESHIP"}, //what?
+
+            {"&&", "AND"},
+            {"||", "OR"},
+            {"!", "NOT"},
         };
 
         public void parserStart(List<string> lexeroutput, List<string> codeoutput)
@@ -151,7 +171,7 @@ namespace PHPtoC_
                 return;
             }
             grammar.AddGrammar(SearchOfDick("Program"), level);
-            parserMain(grammar, lexeroutput, codeoutput, level);
+            parserMain(grammar, lexeroutput, codeoutput);
             printParserResult(grammar);
         }
 
@@ -180,14 +200,14 @@ namespace PHPtoC_
             return 0;
         }
 
-        public void parserMain(Grammar grammar, List<string> lexeroutput, List<string> codeoutput, int level)
+        public void parserMain(Grammar grammar, List<string> lexeroutput, List<string> codeoutput)
         {
             int ASTNumber = 1;
             int i = 0;
             listNumber = i;
-            while (i != lexeroutput.Count && listNumber != lexeroutput.Count && listNumber < lexeroutput.Count)
+            while (i < lexeroutput.Count && listNumber < lexeroutput.Count)
             {
-                level = 1;
+                int level = 1;
                 grammar.AddGrammar("#" + ASTNumber, level);
                 string inp = lexeroutput[listNumber];
                 switch (inp)
@@ -203,14 +223,297 @@ namespace PHPtoC_
                     case "END_LINE":
                         level = 1;
                         break;
+                    
+                    //Conditional
+                    case "IF":
+                        grammar.AddGrammar(SearchOfDick("IfConstruction"), level);
+                        parserConditional(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    case "ELSE":
+                        grammar.AddGrammar(SearchOfDick("ElseConstruction"), level);
+                        parserElse(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    case "ELSEIF":
+                        grammar.AddGrammar(SearchOfDick("ElifConstruction"), level);
+                        parserConditional(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    //Loop
+                    case "WHILE":
+                        grammar.AddGrammar(SearchOfDick("WhileConstruction"), level);
+                        //parserConditional(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    case "DO":
+                        grammar.AddGrammar(SearchOfDick("DoConstruction"), level);
+                        //parserConditional(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    case "FOR":
+                        grammar.AddGrammar(SearchOfDick("ForConstruction"), level);
+                        //parserConditional(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    case "FOREACH":
+                        grammar.AddGrammar(SearchOfDick("ForeachConstruction"), level);
+                        //parserConditional(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    //echo, because its not same function
+                    case "ECHO":
+                        grammar.AddGrammar(SearchOfDick("Call"), level);
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Echo"), level);
+                        listNumber++;
+                        level++;
+                        parserVariable(grammar, lexeroutput, codeoutput, level, "END_LINE");
+                        listNumber++;
+                        break;
 
                     default:
-                        Console.WriteLine("Unexpected tokens! - " + lexeroutput[listNumber]);
+                        Console.WriteLine("Unexpected tokens! - " + listNumber + ". " + lexeroutput[listNumber]);
                         break;
 
                 }
                 ASTNumber++;
                 listNumber++;
+            }
+        }
+
+        public void parserElse(Grammar grammar, List<string> lexeroutput, List<string> codeoutput, int level)
+        {
+            listNumber++;
+            level++;
+            int EOContent = singleCodeLength(lexeroutput, listNumber, "END_VOID");
+            grammar.AddGrammar(SearchOfDick("Content"), level);
+            int initialLevel = level;
+            while (listNumber != EOContent && listNumber <= EOContent)
+            {
+                listNumber++;
+                string inp = lexeroutput[listNumber];
+                switch (inp)
+                {
+                    case "ID":
+                        parserId(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    case "ECHO":
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Echo"), level);
+                        listNumber++;
+                        level++;
+                        parserVariable(grammar, lexeroutput, codeoutput, level, "END_LINE");
+                        listNumber++;
+                        break;
+
+                    case "END_LINE":
+                        break;
+
+                    case "END_VOID":
+                        break;
+
+                    default:
+                        Console.WriteLine("Unexpected tokens! - " + listNumber + ". " + lexeroutput[listNumber]);
+                        break;
+
+                }
+            }
+        }
+
+        public void parserConditional(Grammar grammar, List<string> lexeroutput, List<string> codeoutput, int level)
+        {
+            listNumber++;
+            level++;
+            int initialLevel = level;
+            grammar.AddGrammar(SearchOfDick("Conditions"), level);
+            listNumber++;
+            //loop for the parameters
+            int EOParameters = singleCodeLength(lexeroutput, listNumber, "CLOSED_BRACKET");
+            while (listNumber < EOParameters)
+            {
+                level = initialLevel;
+                string inp = lexeroutput[listNumber];
+                switch (inp)
+                {
+                    //case of parameters
+                    case "ID":
+                        level+=2;
+                        grammar.AddGrammar(SearchOfDick("String"), level);
+                        level++;
+                        grammar.AddGrammar(codeoutput[listNumber], level);
+                        break;
+
+                    case "STRING":
+                        level += 2;
+                        grammar.AddGrammar(SearchOfDick("String"), level);
+                        level++;
+                        grammar.AddGrammar(codeoutput[listNumber], level);
+                        break;
+
+                    case "NUM_INT":
+                        bool itsFloat = false;
+                        level += 2;
+                        for (int i = listNumber; i < EOParameters; i++)
+                        {
+                            //handle the read so wont read more than int/float
+                            if (lexeroutput[i] != "NUM_INT" && lexeroutput[i] != "DOT")
+                                break;
+
+                            if (lexeroutput[i] == "DOT")
+                            {
+                                grammar.AddGrammar(SearchOfDick("FloatNumber"), level);
+                                level++;
+                                string floatValue = codeoutput[i - 1] + codeoutput[i] + codeoutput[i + 1];
+                                grammar.AddGrammar(floatValue, level);
+                                level--;
+                                itsFloat = true;
+                                listNumber = i + 1;
+                                break;
+                            }
+                        }
+
+                        //integer check
+                        if (itsFloat != true)
+                        {
+                            grammar.AddGrammar(SearchOfDick("IntNumber"), level);
+                            level++;
+                            grammar.AddGrammar(codeoutput[listNumber], level);
+                            level--;
+                        }
+                        break;
+
+                    //all condition below
+                    case "ASSIGNMENT_OPERATION__SET":
+                        level++;
+                        if (lexeroutput[listNumber + 1] == "ASSIGNMENT_OPERATION__SET" && lexeroutput[listNumber + 2] == "ASSIGNMENT_OPERATION__SET")
+                        {
+                            listNumber += 2;
+                            grammar.AddGrammar(SearchOfDick("==="), level);
+                            break;
+                        }
+                        if (lexeroutput[listNumber + 1] == "ASSIGNMENT_OPERATION__SET")
+                        {
+                            listNumber += 1;
+                            grammar.AddGrammar(SearchOfDick("=="), level);
+                            break;
+                        }
+                        grammar.AddGrammar(SearchOfDick("="), level);
+                        break;
+
+                    case "LOGICAL_OPERATION__NOT":
+                        level++;
+                        if (lexeroutput[listNumber + 1] == "ASSIGNMENT_OPERATION__SET" && lexeroutput[listNumber + 2] == "ASSIGNMENT_OPERATION__SET")
+                        {
+                            listNumber += 2;
+                            grammar.AddGrammar(SearchOfDick("!=="), level);
+                            break;
+                        }
+                        if (lexeroutput[listNumber + 1] == "ASSIGNMENT_OPERATION__SET")
+                        {
+                            listNumber += 1;
+                            grammar.AddGrammar(SearchOfDick("!="), level);
+                            break;
+                        }
+                        grammar.AddGrammar(SearchOfDick("!"), level);
+                        break;
+
+                    case "COMPARISON_OPERATION__LESS":
+                        level++;
+                        if (lexeroutput[listNumber + 1] == "ASSIGNMENT_OPERATION__SET" && lexeroutput[listNumber + 2] == "ASSIGNMENT_OPERATION__SET")
+                        {
+                            listNumber += 2;
+                            grammar.AddGrammar(SearchOfDick("<=="), level);
+                            break;
+                        }
+                        if (lexeroutput[listNumber + 1] == "ASSIGNMENT_OPERATION__SET")
+                        {
+                            listNumber += 1;
+                            grammar.AddGrammar(SearchOfDick("<="), level);
+                            break;
+                        }
+                        grammar.AddGrammar(SearchOfDick("<"), level);
+                        break;
+
+                    case "COMPARISON_OPERATION__GREAT":
+                        level++;
+                        if (lexeroutput[listNumber + 1] == "ASSIGNMENT_OPERATION__SET" && lexeroutput[listNumber + 2] == "ASSIGNMENT_OPERATION__SET")
+                        {
+                            listNumber += 2;
+                            grammar.AddGrammar(SearchOfDick(">=="), level);
+                            break;
+                        }
+                        if (lexeroutput[listNumber + 1] == "ASSIGNMENT_OPERATION__SET")
+                        {
+                            listNumber += 1;
+                            grammar.AddGrammar(SearchOfDick(">="), level);
+                            break;
+                        }
+                        grammar.AddGrammar(SearchOfDick(">"), level);
+                        break;
+
+                    case "BITWISE_OPERATION__AND":
+                        listNumber++;
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("&&"), level);
+                        break;
+
+                    case "BITWISE_OPERATION__OR":
+                        listNumber++;
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("||"), level);
+                        break;
+
+
+                    case "END_LINE":
+                        level = initialLevel;
+                        break;
+
+                    default:
+                        Console.WriteLine("Unexpected tokens! - " + listNumber + ". " + lexeroutput[listNumber]);
+                        break;
+                }
+                listNumber++;
+            }
+
+            //loop for content
+            listNumber = EOParameters + 1; //this thing TENDS to throw error, especially if the code is incorrectly written
+            level = initialLevel;
+            grammar.AddGrammar(SearchOfDick("Content"), level);
+            int EOContent = singleCodeLength(lexeroutput, listNumber, "END_VOID");
+            
+            while (listNumber < EOContent)
+            {
+                level = initialLevel;
+                listNumber++;
+                string inp = lexeroutput[listNumber];
+                switch (inp)
+                {
+                    case "ID":
+                        parserId(grammar, lexeroutput, codeoutput, level);
+                        break;
+
+                    case "ECHO":
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Echo"), level);
+                        listNumber++;
+                        level++;
+                        parserVariable(grammar, lexeroutput, codeoutput, level, "END_LINE");
+                        listNumber++;
+                        break;
+
+                    case "END_LINE":
+                        break;
+
+                    case "END_VOID":
+                        break;
+
+                    default:
+                        Console.WriteLine("Unexpected tokens! - " + listNumber + ". " + lexeroutput[listNumber]);
+                        break;
+
+                }
             }
         }
 
@@ -232,7 +535,7 @@ namespace PHPtoC_
 
             //loop for the parameters
             int EOParameters = singleCodeLength(lexeroutput, listNumber, "CLOSED_BRACKET");
-            while (listNumber != EOParameters && listNumber <= EOParameters)
+            while (listNumber < EOParameters)
             {
                 string inp = lexeroutput[listNumber];
                 switch (inp)
@@ -274,7 +577,7 @@ namespace PHPtoC_
                         break;
 
                     default:
-                        Console.WriteLine("Unexpected tokens! - " + lexeroutput[listNumber]);
+                        Console.WriteLine("Unexpected tokens! - " + listNumber + ". " + lexeroutput[listNumber]);
                         break;
                 }
                 listNumber++;
@@ -305,6 +608,15 @@ namespace PHPtoC_
                         level = initialLevel;
                         break;
 
+                    case "ECHO":
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Echo"), level);
+                        listNumber++;
+                        level++;
+                        parserVariable(grammar, lexeroutput, codeoutput, level, "END_LINE");
+                        listNumber++;
+                        break;
+
                     case "END_LINE":
                         level = initialLevel;
                         break;
@@ -314,7 +626,7 @@ namespace PHPtoC_
                         break;
 
                     default:
-                        Console.WriteLine("Unexpected tokens! - " + lexeroutput[listNumber]);
+                        Console.WriteLine("Unexpected tokens! - " + listNumber + ". " + lexeroutput[listNumber]);
                         break;
 
                 }     
@@ -326,7 +638,7 @@ namespace PHPtoC_
             int initialLevel = level;
             int EOL = singleCodeLength(lexeroutput, listNumber, "END_LINE");
 
-            while (listNumber != EOL && listNumber != lexeroutput.Count)
+            while (listNumber < EOL && listNumber < lexeroutput.Count)
             {
                 listNumber++;
                 string inp = lexeroutput[listNumber];
@@ -357,12 +669,12 @@ namespace PHPtoC_
                         grammar.AddGrammar(SearchOfDick("ActParameter"), level);
                         level++;
                         listNumber++;
-                        for (int i = listNumber; i != EOL; i++)
+                        for (int i = listNumber; i < EOL; i++)
                         {
                             if (lexeroutput[i] == "COMMA")
                             {
                                 parserVariable(grammar, lexeroutput, codeoutput, level, "COMMA");
-                                listNumber = i;
+                                listNumber = i + 1;
                             }
                             if (lexeroutput[i] == "CLOSED_BRACKET")
                             {
@@ -372,9 +684,12 @@ namespace PHPtoC_
                         }
                         break;
 
-
                     case "END_LINE":
                         level = initialLevel;
+                        break;
+
+                    default:
+                        Console.WriteLine("Unexpected tokens! - " + listNumber + ". " + lexeroutput[listNumber]);
                         break;
                 }
             }
@@ -388,7 +703,7 @@ namespace PHPtoC_
             bool arithmeticOperation = false;
             int levelAfterValue = level;
             int EOL = singleCodeLength(lexeroutput, listNumber, endMark);
-            while (listNumber != EOL && listNumber != lexeroutput.Count)
+            while (listNumber != EOL && listNumber != lexeroutput.Count && listNumber <= EOL)
             {
                 string inp = lexeroutput[listNumber];
                 switch (inp)
@@ -467,6 +782,12 @@ namespace PHPtoC_
                         break;
 
                     case "ID":
+                        if (lexeroutput[listNumber + 1] == "OPEN_BRACKET")
+                        {
+                            parserId(grammar, lexeroutput, codeoutput, level);
+                            listNumber--;
+                            break;
+                        }
                         grammar.AddGrammar(SearchOfDick("Variable"), level);
                         level++;
                         grammar.AddGrammar(codeoutput[listNumber], level);
@@ -489,7 +810,7 @@ namespace PHPtoC_
                         break;
 
                     default:
-                        Console.WriteLine("Unexpected tokens! - " + lexeroutput[listNumber]);
+                        Console.WriteLine("Unexpected tokens! - " + listNumber + ". " + lexeroutput[listNumber]);
                         break;
                 }
                 listNumber++;

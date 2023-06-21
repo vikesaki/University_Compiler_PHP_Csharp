@@ -2,9 +2,9 @@
 $y = 3.2;
 function f($x = 1, $Y)
 {
-  $X = 1 + "3";
-  $W = 12.59;
+  $X = 1;
+  $W = 8;
   return $x * $w;
 }
-f($x + $y, 10);
-
+f($x + $y, $y);
+echo "program ended";
