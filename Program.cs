@@ -27,6 +27,9 @@ namespace PHPtoC_
 
                 Console.WriteLine("\nParser Result\n------------------------------------------------------------------------------------");
                 parser.parserStart(lexemes, splittedCode);
+
+                
+
             }
 
             time.Stop();
