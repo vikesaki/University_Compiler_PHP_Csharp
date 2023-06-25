@@ -43,5 +43,49 @@ foreach ($colors as $value) {
   echo "$value <br>";
 }
 
-test#5 array
-$colors = array("red", "green", "blue", "yellow");
+test#5 basic analyst
+function f($x = 1, $Y)
+{
+  $X= 1;
+  $W = 8;
+  return $x * $w;
+}
+
+$x = 123;
+$y = f(3, $y);
+$x = $x + $z;
+f($x + $y, $y);
+
+test#6 conditional analyst
+$t = date("H");
+text = "a";
+
+if ( $x < "10") {
+  echo text;
+} elseif ( $t < 20) {
+  text = text + textAdd;
+} else {
+  echo "Have a good night!";
+}
+
+test#7 loop analyst
+$x = date("H");
+$y--;
+$a = $y + 2;
+
+while($x <= 5) {
+  echo "The number is: $x <br>";
+  $x++;
+}
+
+do {
+  $b++;
+} while ($y <= 5);
+
+for ($z = 0; $z <= 10; $z++) {
+  echo "The number is: $x <br>";
+}
+
+foreach ($colors as $value) {
+  echo "$value <br>";
+}

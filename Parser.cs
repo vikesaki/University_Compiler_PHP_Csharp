@@ -72,7 +72,20 @@ namespace PHPtoC_
 
                 while (CurrentGrammar.Previous != null)
                     CurrentGrammar = CurrentGrammar.Previous;
+            }
 
+            public void RemovePrevious()
+            {
+                Node copyGrammar;
+                copyGrammar = CurrentGrammar;
+
+                while (copyGrammar.Next.Next != null)
+                    copyGrammar = copyGrammar.Next;
+
+                copyGrammar.Next = null;
+                while (copyGrammar.Previous != null)
+                    copyGrammar = copyGrammar.Previous;
+                CurrentGrammar = copyGrammar;
             }
 
             public void ShowGrammar()
@@ -83,20 +96,23 @@ namespace PHPtoC_
                     return;
                 }
 
+                Node printedGrammar;
+                printedGrammar = CurrentGrammar;
+
                 Console.WriteLine("\nCurrent Grammar");
-                while (CurrentGrammar != null)
+                while (printedGrammar != null)
                 {
-                    for (int i = 0; i < CurrentGrammar.Level; i++)
+                    for (int i = 0; i < printedGrammar.Level; i++)
                     {
                         Console.Write("     ");
                     }
-                    Console.Write(CurrentGrammar.Pattern + "\n");
-                    CurrentGrammar = CurrentGrammar.Next;
+                    Console.Write(printedGrammar.Pattern + "\n");
+                    printedGrammar = printedGrammar.Next;
                 }
 
-                while (CurrentGrammar != null)
+                while (printedGrammar != null)
                 {
-                    CurrentGrammar = CurrentGrammar.Previous;
+                    printedGrammar = printedGrammar.Previous;
                 }
             }
 
@@ -108,12 +124,56 @@ namespace PHPtoC_
                     return;
                 }
 
+                Node printedGrammar;
+                printedGrammar = CurrentGrammar;
                 Console.WriteLine("\nCurrent Grammar");
-                while (CurrentGrammar != null)
+                while (printedGrammar != null)
                 {
-                    Console.Write(CurrentGrammar.Pattern + " level : " + CurrentGrammar.Level + "\n");
-                    CurrentGrammar = CurrentGrammar.Next;
+                    Console.Write(printedGrammar.Pattern + " level : " + printedGrammar.Level + "\n");
+                    printedGrammar = printedGrammar.Next;
                 }
+            }
+
+            public int GetGrammarLength()
+            {
+                Node printedGrammar;
+                printedGrammar = CurrentGrammar;
+                int result = 0;
+                while (printedGrammar.Next != null)
+                {
+                    result++;
+                    printedGrammar = printedGrammar.Next;
+                }
+                    
+                return result;
+            }
+
+            public int GetGrammarAmount()
+            {
+                Node printedGrammar;
+                printedGrammar = CurrentGrammar;
+                int result = 0;
+                string prefix = "#";
+                int suffix = 1;
+                string GrammarNumber;
+                while (printedGrammar.Next != null)
+                {
+                    GrammarNumber = prefix + suffix;
+                    if (printedGrammar.Pattern == GrammarNumber)
+                    {
+                        result++;
+                        suffix++;
+                    }
+                    printedGrammar = printedGrammar.Next;
+                }
+                return result;
+            }
+
+            public Node returnGrammar()
+            {
+                Node result;
+                result = CurrentGrammar;
+                return result;
             }
         }
 
@@ -165,8 +225,8 @@ namespace PHPtoC_
             {"Return","RETURN"},
             {"ListElements","LISTELEMENTS"},
             {"Echo", "ECHO"},
-            {"Increment", "Increment"},
-            {"Decrement", "Decrement"},
+            {"Increment", "INCREMENT"},
+            {"Decrement", "DECREMENT"},
 
 
             //condition stuff below
@@ -186,9 +246,8 @@ namespace PHPtoC_
             {"!", "NOT"},
         };
 
-        public void parserStart(List<string> lexeroutput, List<string> codeoutput)
+        public void parserStart(List<string> lexeroutput, List<string> codeoutput, Grammar grammar)
         {
-            Grammar grammar = new Grammar();
             int level = 0;
             if (lexeroutput == null || codeoutput == null)
             {
@@ -197,17 +256,8 @@ namespace PHPtoC_
             }
             grammar.AddGrammar(SearchOfDick("Program"), level);
             parserMain(grammar, lexeroutput, codeoutput);
-            printParserResult(grammar);
-
-            //Console.WriteLine("\nParser Linear Result\n------------------------------------------------------------------------------------");
-            //grammar.ShowLinearGrammar();
+            grammar.AddGrammar("#", 0);
         }
-
-        public void printParserResult (Grammar grammar)
-        {
-            grammar.ShowGrammar();
-        }
-
 
         //pulling dictionary reference
         public string SearchOfDick(string inp)
@@ -376,7 +426,7 @@ namespace PHPtoC_
                     //case of parameters
                     case "ID":
                         level += 2;
-                        grammar.AddGrammar(SearchOfDick("String"), level);
+                        grammar.AddGrammar(SearchOfDick("Variable"), level);
                         level++;
                         grammar.AddGrammar(codeoutput[listNumber], level);
                         break;
@@ -615,7 +665,7 @@ namespace PHPtoC_
                     //case of parameters
                     case "ID":
                         level+=2;
-                        grammar.AddGrammar(SearchOfDick("String"), level);
+                        grammar.AddGrammar(SearchOfDick("Variable"), level);
                         level++;
                         grammar.AddGrammar(codeoutput[listNumber], level);
                         break;
@@ -743,29 +793,69 @@ namespace PHPtoC_
                     case "ARITHMETIC_OPERATION__ADD":
                         if (lexeroutput[listNumber + 1] == "ARITHMETIC_OPERATION__ADD")
                         {
-                            grammar.AddBeforeGrammar(SearchOfDick("Call"), level);
+                            grammar.RemovePrevious();
+                            grammar.RemovePrevious();
                             level++;
-                            grammar.AddBeforeGrammar(SearchOfDick("Name"), level);
+                            grammar.AddGrammar(SearchOfDick("Increment"), level);
                             level++;
-                            grammar.AddBeforeGrammar(SearchOfDick("Increment"), level);
-                            level--;
-                            grammar.AddBeforeGrammar(SearchOfDick("ActParameter"), level);
+                            grammar.AddGrammar(SearchOfDick("ActParameter"), level);
                             level++;
+                            grammar.AddGrammar(SearchOfDick("Variable"), level);
+                            level++;
+                            grammar.AddGrammar(codeoutput[listNumber - 1], level);
                             listNumber += 2;
                             break;
                         }
-                        grammar.AddGrammar(SearchOfDick("Call"), level);
-                        level++;
-                        grammar.AddGrammar(SearchOfDick("Name"), level);
+                        grammar.RemovePrevious();
+                        grammar.RemovePrevious();
                         level++;
                         grammar.AddGrammar(SearchOfDick("Add"), level);
-                        level--;
+                        level++;
                         grammar.AddGrammar(SearchOfDick("ActParameter"), level);
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Variable"), level);
                         level++;
                         grammar.AddGrammar(codeoutput[listNumber - 1], level);
                         level--;
+                        grammar.AddGrammar(SearchOfDick("Variable"), level);
+                        level++;
+                        grammar.AddGrammar(codeoutput[listNumber + 1], level);
+                        level--;
                         listNumber += 2;
-                        parserVariable(grammar, lexeroutput, codeoutput, level, "CLOSED_BRACKET");
+                        break;
+
+                    case "ARITHMETIC_OPERATION__SUB":
+                        if (lexeroutput[listNumber + 1] == "ARITHMETIC_OPERATION__SUB")
+                        {
+                            grammar.RemovePrevious();
+                            grammar.RemovePrevious();
+                            level++;
+                            grammar.AddGrammar(SearchOfDick("Decrement"), level);
+                            level++;
+                            grammar.AddGrammar(SearchOfDick("ActParameter"), level);
+                            level++;
+                            grammar.AddGrammar(SearchOfDick("Variable"), level);
+                            level++;
+                            grammar.AddGrammar(codeoutput[listNumber - 1], level);
+                            listNumber += 2;
+                            break;
+                        }
+                        grammar.RemovePrevious();
+                        grammar.RemovePrevious();
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Sub"), level);
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("ActParameter"), level);
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Variable"), level);
+                        level++;
+                        grammar.AddGrammar(codeoutput[listNumber - 1], level);
+                        level--;
+                        grammar.AddGrammar(SearchOfDick("Variable"), level);
+                        level++;
+                        grammar.AddGrammar(codeoutput[listNumber + 1], level);
+                        level--;
+                        listNumber += 2;
                         break;
 
                     default:
@@ -981,7 +1071,7 @@ namespace PHPtoC_
                         }
                         break;
 
-                    case "ARITHMETIC_OPERATION__ADD":
+                    /*case "ARITHMETIC_OPERATION__ADD":
                         if (lexeroutput[listNumber + 1] == "ARITHMETIC_OPERATION__ADD")
                         {
                             grammar.AddGrammar(SearchOfDick("Call"), level);
@@ -1009,6 +1099,58 @@ namespace PHPtoC_
                         level--;
                         listNumber+=2;
                         parserVariable(grammar, lexeroutput, codeoutput, level, "END_LINE");
+                        break;*/
+
+                    case "ARITHMETIC_OPERATION__ADD":
+                        if (lexeroutput[listNumber + 1] == "ARITHMETIC_OPERATION__ADD")
+                        {
+                            grammar.AddGrammar(SearchOfDick("Increment"), level);
+                            level++;
+                            grammar.AddGrammar(SearchOfDick("ActParameter"), level);
+                            level++;
+                            grammar.AddGrammar(SearchOfDick("Variable"), level);
+                            level++;
+                            grammar.AddGrammar(codeoutput[listNumber - 1], level);
+                            listNumber += 2;
+                            break;
+                        }
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Add"), level);
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("ActParameter"), level);
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Variable"), level);
+                        level++;
+                        grammar.AddGrammar(codeoutput[listNumber - 1], level);
+                        level--;
+                        listNumber += 2;
+                        parserVariable(grammar, lexeroutput, codeoutput, level, "CLOSED_BRACKET");
+                        break;
+
+                    case "ARITHMETIC_OPERATION__SUB":
+                        if (lexeroutput[listNumber + 1] == "ARITHMETIC_OPERATION__SUB")
+                        {
+                            grammar.AddGrammar(SearchOfDick("Decrement"), level);
+                            level++;
+                            grammar.AddGrammar(SearchOfDick("ActParameter"), level);
+                            level++;
+                            grammar.AddGrammar(SearchOfDick("Variable"), level);
+                            level++;
+                            grammar.AddGrammar(codeoutput[listNumber - 1], level);
+                            listNumber += 2;
+                            break;
+                        }
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Sub"), level);
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("ActParameter"), level);
+                        level++;
+                        grammar.AddGrammar(SearchOfDick("Variable"), level);
+                        level++;
+                        grammar.AddGrammar(codeoutput[listNumber - 1], level);
+                        level--;
+                        listNumber += 2;
+                        parserVariable(grammar, lexeroutput, codeoutput, level, "CLOSED_BRACKET");
                         break;
 
 
