@@ -4,12 +4,12 @@ consisting of parser, lexer, and some basic semantic analyst.
 
 ## Lexer and Parser
 works with basic PHP feature such as
-'''
+```
 variable declaration
 function declaration
 conditional case (if)
 loop case (while, for, foreach, dowhile)
-'''
+```
 
 ## Semantic analyst
 check the parser output and separate variables either to *global*, *local* or *used*.
