@@ -1,20 +1,15 @@
-﻿$x = date("H");
-$y--;
-$a = $y + 2;
-
-while($x <= 5) {
-  echo "The number is: $x <br>";
-  $x++;
+﻿function f($x = 1, $Y)
+{
+  $X= 1;
+  $W = 8;
+  return $x * $w;
+}
+function g($x)
+{
+  return $x;
 }
 
-do {
-  $b++;
-} while ($y <= 5);
-
-for ($z = 0; $z <= 10; $z++) {
-  echo "The number is: $x <br>";
-}
-
-foreach ($colors as $value) {
-  echo "$value <br>";
-}
+$x = 123;
+$y = f(3, $y);
+$x = $x + $z;
+f($x + $y, $y);

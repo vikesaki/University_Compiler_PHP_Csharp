@@ -198,8 +198,7 @@ namespace PHPtoC_
                         startGrammar = endGrammar;
                         break;
                 }
-            }
-            
+            }  
         }
 
         public static void ForCase(Parser.Grammar grammar, List<string> VariableUsed, List<string> GlobalVariables, List<string> LocalVariables, Parser.Node startGrammar, Parser.Node endGrammar)

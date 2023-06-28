@@ -1,15 +1,20 @@
-# University_Compiler_PHP_Csharp
-translate PHP code to C# code. (kinda)  
+# University_Compiler_PHP_Python
+translate PHP code to Python code. (kinda)  
 consisting of parser, lexer, and some basic semantic analyst.
 
-## Lexer and Parser
+## Lexer, Parser, and Translator
 works with basic PHP feature such as  
 
 + variable declaration
 + function declaration
-+ conditional case (if)
++ conditional case (if, elif, else)
 + loop case (while, for, foreach, dowhile)
++ increment and decrement
 
+known issue
+
++ cant call function inside conditions
++ parser didn't read conditional and loop inside function
 
 ## Semantic analyst
 check the parser output and separate variables either to *global*, *local* or *used*.

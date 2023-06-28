@@ -13,6 +13,7 @@ namespace PHPtoC_
             List<string> lexemes = new List<string>();
             List<string> splittedCode = new List<string>();
             Parser.Grammar grammar = new Parser.Grammar();
+            List<string> translated = new List<string>();
 
             Stopwatch time = new Stopwatch();
             time.Start();
@@ -21,9 +22,10 @@ namespace PHPtoC_
                 Lexer lexer = new Lexer();
                 Parser parser = new Parser();
                 SemanticAnalyst semanticAnalyst = new SemanticAnalyst();
+                Translator translator = new Translator();
                 
 
-                Console.WriteLine("\n------------------------------------------------------------------------------------\nLexer Result\n------------------------------------------------------------------------------------");
+                Console.WriteLine("\n------------------------------------------------------------------------------------\nLexer Result (PHP)\n------------------------------------------------------------------------------------");
                 lexer.OpenInputFiles("");
                 lexer.processingLine();
                 lexer.resultSplitter(lexemes, splittedCode);
@@ -36,10 +38,14 @@ namespace PHPtoC_
 
                 Console.WriteLine("\n------------------------------------------------------------------------------------\nSemantic Analyst Result\n------------------------------------------------------------------------------------");
                 semanticAnalyst.Start(grammar);
+
+                Console.WriteLine("\n\n------------------------------------------------------------------------------------\nTranslator Result (Python)\n------------------------------------------------------------------------------------");
+                translator.TranslatorStart(grammar, translated);
+                translator.PrintTransator(translated);
             }
 
             time.Stop();
-            Console.WriteLine("\n------------------------------------------------------------------------------------");
+            Console.WriteLine("\n\n------------------------------------------------------------------------------------");
             Console.Write("Program runtime: {0}", time.Elapsed.TotalSeconds); 
             Console.Write(" seconds");
             Console.WriteLine("\n------------------------------------------------------------------------------------");
