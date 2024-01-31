@@ -21,6 +21,7 @@ check the parser output and separate variables either to *global*, *local* or *u
 
 ## Optimization
 remove all the *global* that is not *used*.
+to run the optimization, the *optimization* value inside *Program.cs* need to be *true*
 
 known issue
 
