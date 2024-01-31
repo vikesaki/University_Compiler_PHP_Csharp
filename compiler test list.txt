@@ -1,11 +1,11 @@
-test #1 - variable
+-------------------------------------test #1 - variable
 $x = 5985 - (200.1 + "abc") * 1;
 
 $y = "59.85" + 100;
 
 $z = 10.65;
 
-test#2 - function
+-------------------------------------test#2 - function
 $x = 123;
 $y = 3.2;
 function f($x = 1, $Y)
@@ -16,7 +16,7 @@ function f($x = 1, $Y)
 }
 f($x + $y, $y);
 
-test#3 - conditional & echo
+-------------------------------------test#3 - conditional & echo
 $t = date("H");
 
 if ($t < "10") {
@@ -27,7 +27,7 @@ if ($t < "10") {
   echo "Have a good night!";
 }
 
-test#4 - loop 
+-------------------------------------test#4 - loop 
 while($x <= 5) {
   echo "The number is: $x <br>";
   $x++;
@@ -43,7 +43,7 @@ foreach ($colors as $value) {
   echo "$value <br>";
 }
 
-test#5 basic analyst
+-------------------------------------test#5 basic analyst
 function f($x = 1, $Y)
 {
   $X= 1;
@@ -62,7 +62,7 @@ $y = f(3, $y);
 $x = $x + $z;
 f($x + $y, $y);
 
-test#6 conditional analyst
+-------------------------------------test#6 conditional analyst
 $t = date("H");
 $text = "a";
 
@@ -74,7 +74,10 @@ if ( $x < "10") {
   echo "Have a good night!";
 }
 
-test#7 loop analyst
+---------------------------------------------------------------------------------------------------------
+TEST CASE FOR DELETING UNUSED VARIABLE(S)
+
+-------------------------------------test#7 loop analyst
 $x = date("H");
 $y--;
 $a = $y + 2;
@@ -95,3 +98,31 @@ for ($z = 0; $z <= 10; $z++) {
 foreach ($colors as $value) {
   echo $value + "abc";
 }
+
+-------------------------------------test#7 multiple delete test
+$delete1 = "delete this";
+$b = 1;
+$delete2 = true;
+$b++;
+$delete3 = 2;
+
+-------------------------------------test#8 multiple delete test
+function h($x)
+{
+  return $x;
+}
+function g($x)
+{
+  while ($x < 10)
+     $x++;
+  return $x;
+}
+function f($x = 1, $Y)
+{
+  $X = g(5);
+}
+
+$x = 123;
+$y = f(3, $y);
+$x = $x + $z;
+f($x + $y, $y);
