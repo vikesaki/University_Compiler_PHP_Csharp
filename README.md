@@ -1,4 +1,4 @@
-# University_Compiler_PHP_Python
+# Compiler_PHP_Python
 translate PHP code to Python code. (kinda)  
 consisting of parser, lexer, and some basic semantic analyst.
 
