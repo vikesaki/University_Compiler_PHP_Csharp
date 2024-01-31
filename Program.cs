@@ -10,6 +10,11 @@ namespace PHPtoC_
         [STAThread]
         static void Main()
         {
+            // Setup for optimization
+            // False = Dont delete the unused variables
+            // True = Delete unused variables
+            bool Optimization = true;
+
             List<string> lexemes = new List<string>();
             List<string> splittedCode = new List<string>();
             Parser.Grammar grammar = new Parser.Grammar();
@@ -37,7 +42,9 @@ namespace PHPtoC_
                 Console.WriteLine("\nGrammar Amount : " + grammar.GetGrammarAmount());
 
                 Console.WriteLine("\n------------------------------------------------------------------------------------\nSemantic Analyst Result\n------------------------------------------------------------------------------------");
-                semanticAnalyst.Start(grammar);
+                semanticAnalyst.Start(grammar, Optimization);
+                if(Optimization)
+                    grammar.ShowGrammar();
 
                 Console.WriteLine("\n\n------------------------------------------------------------------------------------\nTranslator Result (Python)\n------------------------------------------------------------------------------------");
                 translator.TranslatorStart(grammar, translated);

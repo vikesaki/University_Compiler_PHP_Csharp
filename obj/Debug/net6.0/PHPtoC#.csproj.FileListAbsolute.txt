@@ -3,7 +3,6 @@ D:\3. belajar\6. kurs tiga\tyapik\PHPtoC#\bin\Debug\net6.0\PHPtoC#.deps.json
 D:\3. belajar\6. kurs tiga\tyapik\PHPtoC#\bin\Debug\net6.0\PHPtoC#.runtimeconfig.json
 D:\3. belajar\6. kurs tiga\tyapik\PHPtoC#\bin\Debug\net6.0\PHPtoC#.dll
 D:\3. belajar\6. kurs tiga\tyapik\PHPtoC#\bin\Debug\net6.0\PHPtoC#.pdb
-D:\3. belajar\6. kurs tiga\tyapik\PHPtoC#\obj\Debug\net6.0\PHPtoC#.csproj.AssemblyReference.cache
 D:\3. belajar\6. kurs tiga\tyapik\PHPtoC#\obj\Debug\net6.0\PHPtoC#.GeneratedMSBuildEditorConfig.editorconfig
 D:\3. belajar\6. kurs tiga\tyapik\PHPtoC#\obj\Debug\net6.0\PHPtoC#.AssemblyInfoInputs.cache
 D:\3. belajar\6. kurs tiga\tyapik\PHPtoC#\obj\Debug\net6.0\PHPtoC#.AssemblyInfo.cs

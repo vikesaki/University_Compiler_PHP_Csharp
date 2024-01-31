@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using static PHPtoC_.Parser;
 
 namespace PHPtoC_
 {
@@ -14,7 +15,7 @@ namespace PHPtoC_
         List<String> LocalVariables = new List<String>();
         List<String> GlobalVariables = new List<String>();
 
-        public void Start(Parser.Grammar grammar)
+        public void Start(Parser.Grammar grammar, bool Optimization)
         {
             List<String> UnusedVar = new List<String>();
             List<String> InexistVar = new List<String>();
@@ -32,6 +33,12 @@ namespace PHPtoC_
             ShowList(UnusedVar);
             Console.WriteLine("\n\nVariables that used but not stated : ");
             ShowList(InexistVar);
+
+            if (Optimization)
+            {
+                Console.WriteLine("\n\nRemoving variables stated but not used : ");
+                RemoveUnused(grammar, UnusedVar);
+            } 
         }
 
         public static void ShowList(List<String> list)
@@ -327,7 +334,7 @@ namespace PHPtoC_
                 {
                     case "CALL":
                         startGrammar = startGrammar.Next.Next;
-                        GlobalVariables.Add(startGrammar.Pattern);
+                        VariableUsed.Add(startGrammar.Pattern);
                         break;
 
                     case "FORMALPARAMETERS":
@@ -403,5 +410,179 @@ namespace PHPtoC_
             InexistVar = VariableUsed.Except(GlobalVariables).ToList();
             return InexistVar;
         }
+        
+        public void RemoveUnused (Parser.Grammar grammar, List<String> Unused)
+        {
+            string prefix = "#";
+            int suffix = 1;
+            int suffixInc = suffix + 1;
+            string GrammarNumberStart;
+            string GrammarNumberEnd;
+            int currentLocation = 0;
+            string currentPattern = "";
+
+            int totalGrammar = grammar.GetGrammarAmount();
+            int lengthGrammar = grammar.GetGrammarLength();
+            Parser.Node startGrammar = grammar.returnGrammar();
+            Parser.Node endGrammar = grammar.returnGrammar();
+
+
+            while (suffixInc <= totalGrammar && currentLocation < lengthGrammar)
+            {
+                GrammarNumberStart = prefix + suffix;
+                GrammarNumberEnd = prefix + suffixInc;
+                while (startGrammar.Pattern != GrammarNumberStart)
+                    startGrammar = startGrammar.Next;
+                while (endGrammar.Pattern != GrammarNumberEnd)
+                    endGrammar = endGrammar.Next;
+
+                while (startGrammar != endGrammar)
+                {
+                    startGrammar = startGrammar.Next;
+                    switch (startGrammar.Pattern)
+                    {
+                        case "STATEMENT":
+                            if (startGrammar.Next.Pattern == "IDENTIFIER" && startGrammar.Next.Next.Pattern == "VARIABLE")
+                            {
+                                startGrammar = startGrammar.Next.Next.Next;
+                                currentPattern = startGrammar.Pattern;
+                                var match = Unused.FirstOrDefault(stringToCheck => stringToCheck.Contains(currentPattern));
+                                if (match != null)
+                                {
+                                    RemoveGrammar(grammar, currentPattern, currentLocation + 1);
+                                }
+                            }
+                            if (startGrammar.Next.Pattern == "FUNCTION" && startGrammar.Next.Next.Pattern == "NAME")
+                            {
+                                startGrammar = startGrammar.Next.Next.Next;
+                                currentPattern = startGrammar.Pattern;
+                                var match = Unused.FirstOrDefault(stringToCheck => stringToCheck.Contains(currentPattern));
+                                if (match != null)
+                                {
+                                    RemoveGrammar(grammar, currentPattern, currentLocation + 1);
+                                }
+                            }
+                            startGrammar = startGrammar.Next.Next;
+                            break;
+                    }
+                    break;
+                }
+                suffix++;
+                suffixInc++;
+                currentLocation++; 
+            }
+
+            GrammarNumberStart = prefix + suffix;
+            while (startGrammar.Pattern != GrammarNumberStart)
+                startGrammar = startGrammar.Next;
+            while (endGrammar.Pattern != prefix)
+                endGrammar = endGrammar.Next;
+
+            while (startGrammar != endGrammar)
+            {
+                startGrammar = startGrammar.Next;
+                switch (startGrammar.Pattern)
+                {
+                    case "STATEMENT":
+                        if (startGrammar.Next.Pattern == "IDENTIFIER" && startGrammar.Next.Next.Pattern == "VARIABLE")
+                        {
+                            startGrammar = startGrammar.Next.Next.Next;
+                            currentPattern = startGrammar.Pattern;
+                            var match = Unused.FirstOrDefault(stringToCheck => stringToCheck.Contains(currentPattern));
+                            if (match != null)
+                            {
+                                RemoveGrammar(grammar, currentPattern, currentLocation + 1);
+                            }
+                        }
+                        if (startGrammar.Next.Pattern == "FUNCTION" && startGrammar.Next.Next.Pattern == "NAME")
+                        {
+                            startGrammar = startGrammar.Next.Next.Next;
+                            currentPattern = startGrammar.Pattern;
+                            var match = Unused.FirstOrDefault(stringToCheck => stringToCheck.Contains(currentPattern));
+                            if (match != null)
+                            {
+                                RemoveGrammar(grammar, currentPattern, currentLocation + 1);
+                            }
+                        }
+                        startGrammar = startGrammar.Next.Next;
+                        break;
+                }
+                break;
+            }
+        }
+
+        public void RemoveGrammar(Parser.Grammar grammar, string pattern, int location)
+        {
+            Parser.Node newStart = grammar.returnGrammar();
+            Parser.Node newEnd = grammar.returnGrammar();
+
+            string prefix = "#";
+            int endLocation = location + 1;
+            string start = prefix + location;
+            string end = prefix + endLocation;
+            int totalGrammar = grammar.GetGrammarAmount();
+            int lengthGrammar = grammar.GetGrammarLength();
+            while (endLocation <= totalGrammar && location < lengthGrammar)
+            {
+                while (newStart.Pattern != start)
+                    newStart = newStart.Next;
+                while (newEnd.Pattern != end)
+                    newEnd = newEnd.Next;
+                newStart = newStart.Next;
+
+                if (newStart.Previous == null)
+                {
+                    while (newStart.Pattern != end)
+                    {
+                        grammar.CurrentGrammar = grammar.CurrentGrammar.Next;
+                        grammar.CurrentGrammar.Previous = null;
+                        newStart = newStart.Next;
+                    }
+                }
+                else
+                {
+                    while (newStart.Pattern != end)
+                    {
+                        newStart.Previous.Next = newStart.Next;
+                        newStart.Next.Previous = newStart.Previous;
+                        newStart = newStart.Next;
+                    }
+
+                }
+                return;
+            }
+
+            while (newStart.Pattern != start)
+                newStart = newStart.Next;
+            while (newEnd.Pattern != prefix)
+                newEnd = newEnd.Next;
+            newStart = newStart.Next;
+            while (newStart.Pattern != prefix)
+            {
+                newStart.Previous.Next = newStart.Next;
+                newStart.Next.Previous = newStart.Previous;
+                newStart = newStart.Next;
+            }
+
+            //fixing numbering
+            //shits doesnt work, dunno why
+            /*
+            while (newStart.Next != null)
+            {
+                if (newStart.Pattern == end)
+                {
+                    location++;
+                    endLocation = location + 1;
+                    start = "#" + location;
+                    end = "#" + endLocation;
+                    newStart.Pattern = start;
+                }
+                newStart = newStart.Next;
+            }
+            
+
+            grammar.ShowGrammar();*/
+        } 
     }
 }
+

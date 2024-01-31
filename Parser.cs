@@ -23,7 +23,6 @@ namespace PHPtoC_
                 Next = next;
                 Previous = previous;
             }
-
         }
 
         public class Grammar

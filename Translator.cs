@@ -13,6 +13,7 @@ namespace PHPtoC_
         List<String> TranslatorResult = new List<String>();
 
         int currentLocation = 0;
+        bool SkipCurrent = false;
 
 
         public void PrintTransator(List<String> translated)
@@ -87,6 +88,7 @@ namespace PHPtoC_
 
             while (suffixInc <= totalGrammar && currentLocation < lengthGrammar)
             {
+                SkipCurrent = false;
                 GrammarNumberStart = prefix + suffix;
                 GrammarNumberEnd = prefix + suffixInc;
                 while (startGrammar.Pattern != GrammarNumberStart)
@@ -983,7 +985,6 @@ namespace PHPtoC_
         public static void IdentifierCase(Parser.Grammar grammar, List<String> translated, Parser.Node startGrammar, Parser.Node endGrammar)
         {
             //bool arithmeticOperation = false;
-
             while (startGrammar.Pattern != "VARIABLE")
                 startGrammar = startGrammar.Next;
             startGrammar = startGrammar.Next; //var nam

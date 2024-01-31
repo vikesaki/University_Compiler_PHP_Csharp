@@ -19,6 +19,14 @@ known issue
 ## Semantic analyst
 check the parser output and separate variables either to *global*, *local* or *used*.
 
+## Optimization
+remove all the *global* that is not *used*.
+
+known issue
+
++ wont remove the unused local var
+
+
 ## Test
 some test that *worked* with the code is provided in the *compiler test list.txt*.  
 the input file located in *bin/debug/net6.0/input.txt*
